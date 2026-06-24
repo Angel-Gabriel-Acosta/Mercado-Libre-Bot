@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Bot - Panel de Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+
+        header {
+            background: #fff159;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 22px; color: #333; }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulso 1.5s infinite;
+        }
+        @keyframes pulso {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+
+        .bienvenida {
+            background: white;
+            border-radius: 16px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .bienvenida h2 { font-size: 28px; margin-bottom: 12px; }
+        .bienvenida p { color: #888; margin-bottom: 32px; font-size: 16px; }
+
+        .btn-conectar {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #3483fa;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        .btn-conectar:hover { background: #2968c8; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .stat-card .numero { font-size: 42px; font-weight: bold; color: #3483fa; }
+        .stat-card .label { font-size: 14px; color: #888; margin-top: 4px; }
+
+        .seccion-titulo { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #444; }
+
+        .card-vacia {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: #aaa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🤖 ML Bot - Panel de Control</h1>
+    {% if usuario %}
+    <div class="bot-status">
+        <div class="dot"></div>
+        Bot activo · {{ usuario.nickname }}
+    </div>
+    {% endif %}
+</header>
+
+<div class="container">
+
+    {% if not usuario %}
+    <div class="bienvenida">
+        <h2>👋 Bienvenido a ML Bot</h2>
+        <p>Conectá tu cuenta de MercadoLibre para empezar a responder preguntas automáticamente con IA.</p>
+        <a href="/auth/login" class="btn-conectar">
+            🔗 Conectar cuenta de MercadoLibre
+        </a>
+    </div>
+
+    {% else %}
+    <div class="stats">
+        <div class="stat-card">
+            <div class="numero">0</div>
+            <div class="label">Preguntas hoy</div>
+        </div>
+        <div class="stat-card">
+            <div class="numero">0</div>
+            <div class="label">Respondidas automáticamente</div>
+        </div>
+        <div class="stat-card">
+            <div class="numero">0</div>
+            <div class="label">Pendientes</div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div>
+            <div class="seccion-titulo">Mis publicaciones</div>
+            <div class="card-vacia">
+                📦 Cargando publicaciones...
+            </div>
+        </div>
+
+        <div>
+            <div class="seccion-titulo">Preguntas recientes</div>
+            <div class="card-vacia">
+                💬 Aún no hay preguntas registradas.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
