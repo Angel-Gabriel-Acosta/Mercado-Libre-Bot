@@ -1,9 +1,9 @@
 import httpx
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
-from app.database import guardar_usuario
+from app.database import registrar_usuario, login_usuario, guardar_ml_token, SessionLocal, Usuario
 
 load_dotenv()
 
@@ -13,8 +13,34 @@ APP_ID = os.getenv("ML_APP_ID")
 SECRET_KEY = os.getenv("ML_SECRET_KEY")
 REDIRECT_URI = os.getenv("ML_REDIRECT_URI")
 
-@router.get("/login")
-def login():
+@router.post("/registro")
+async def registro(request: Request):
+    form = await request.form()
+    email = form.get("email")
+    password = form.get("password")
+    
+    usuario = registrar_usuario(email, password)
+    if not usuario:
+        return RedirectResponse("/login?error=El email ya está registrado", status_code=303)
+    
+    request.session["user_id"] = usuario.id
+    return RedirectResponse("/", status_code=303)
+
+@router.post("/login")
+async def login_post(request: Request):
+    form = await request.form()
+    email = form.get("email")
+    password = form.get("password")
+    
+    usuario = login_usuario(email, password)
+    if not usuario:
+        return RedirectResponse("/login?error=Email o contraseña incorrectos", status_code=303)
+    
+    request.session["user_id"] = usuario.id
+    return RedirectResponse("/", status_code=303)
+
+@router.get("/ml/conectar")
+def ml_conectar(request: Request):
     url = (
         f"https://auth.mercadolibre.com.ar/authorization"
         f"?response_type=code"
@@ -24,7 +50,11 @@ def login():
     return RedirectResponse(url)
 
 @router.get("/callback")
-async def callback(code: str):
+async def callback(code: str, request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse("/login")
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "https://api.mercadolibre.com/oauth/token",
@@ -40,19 +70,21 @@ async def callback(code: str):
     tokens = response.json()
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token")
-    user_id = tokens.get("user_id")
+    ml_user_id = tokens.get("user_id")
 
-    # Buscar nickname del usuario
     async with httpx.AsyncClient() as client:
         user_response = await client.get(
-            f"https://api.mercadolibre.com/users/{user_id}",
+            f"https://api.mercadolibre.com/users/{ml_user_id}",
             headers={"Authorization": f"Bearer {access_token}"}
         )
     user_data = user_response.json()
     nickname = user_data.get("nickname", "")
 
-    # Guardar en base de datos
-    guardar_usuario(user_id, access_token, refresh_token, nickname)
+    guardar_ml_token(user_id, ml_user_id, access_token, refresh_token, nickname)
 
-    # Redirigir al panel
     return RedirectResponse("/")
+
+@router.get("/desconectar")
+def desconectar(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login")

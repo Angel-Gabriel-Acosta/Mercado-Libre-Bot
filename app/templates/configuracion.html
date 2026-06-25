@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Bot - Configuración</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+        header {
+            background: #fff159;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 22px; color: #333; }
+        nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 24px;
+        }
+        nav a:hover { color: #3483fa; }
+        .container { max-width: 700px; margin: 32px auto; padding: 0 24px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #333; }
+        .campo { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; }
+        .descripcion { font-size: 12px; color: #999; margin-bottom: 8px; }
+        select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        select:focus, textarea:focus { border-color: #3483fa; }
+        textarea { resize: vertical; min-height: 100px; }
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-info { flex: 1; }
+        .toggle-titulo { font-size: 14px; font-weight: 600; }
+        .toggle-subtitulo { font-size: 12px; color: #999; margin-top: 2px; }
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            margin-left: 16px;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        input:checked + .slider { background: #3483fa; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #3483fa;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #2968c8; }
+        .exito {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🤖 ML Bot</h1>
+    <nav>
+        <a href="/">Panel</a>
+        <a href="/configuracion">Configuración</a>
+        <a href="/demo">Demo</a>
+        <a href="/historial">Historial</a>
+        <a href="/auth/desconectar">Cerrar sesión</a>
+    </nav>
+</header>
+
+<div class="container">
+
+    {% if guardado %}
+    <div class="exito">✅ Configuración guardada correctamente</div>
+    {% endif %}
+
+    <form method="POST" action="/configuracion">
+
+        <div class="card">
+            <h2>🤖 Comportamiento del bot</h2>
+
+            <div class="campo">
+                <label>Tono de respuesta</label>
+                <div class="descripcion">¿Cómo querés que responda el bot a tus compradores?</div>
+                <select name="tono">
+                    <option value="amigable" {% if config.tono == 'amigable' %}selected{% endif %}>😊 Amigable — cercano y cordial</option>
+                    <option value="formal" {% if config.tono == 'formal' %}selected{% endif %}>👔 Formal — profesional y serio</option>
+                    <option value="breve" {% if config.tono == 'breve' %}selected{% endif %}>⚡ Breve — respuestas cortas y directas</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label>Información extra del negocio</label>
+                <div class="descripcion">El bot va a usar esto para responder mejor. Ejemplo: "Hacemos envíos a todo el país. Garantía de 6 meses."</div>
+                <textarea name="info_extra" placeholder="Escribí información sobre tu negocio, políticas de envío, garantías, etc...">{{ config.info_extra or '' }}</textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Opciones</h2>
+
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-titulo">Bot activo</div>
+                    <div class="toggle-subtitulo">Responder preguntas automáticamente</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="bot_activo" {% if config.bot_activo %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-titulo">Modo revisión</div>
+                    <div class="toggle-subtitulo">Revisar respuestas antes de enviarlas</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="modo_revision" {% if config.modo_revision %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+        </div>
+
+        <button class="btn" type="submit">Guardar configuración</button>
+
+    </form>
+</div>
+
+</body>
+</html>

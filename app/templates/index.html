@@ -7,7 +7,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
-
         header {
             background: #fff159;
             padding: 16px 32px;
@@ -17,7 +16,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         header h1 { font-size: 22px; color: #333; }
-
         .bot-status {
             display: flex;
             align-items: center;
@@ -40,9 +38,7 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
-
         .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
-
         .bienvenida {
             background: white;
             border-radius: 16px;
@@ -52,7 +48,6 @@
         }
         .bienvenida h2 { font-size: 28px; margin-bottom: 12px; }
         .bienvenida p { color: #888; margin-bottom: 32px; font-size: 16px; }
-
         .btn-conectar {
             display: inline-flex;
             align-items: center;
@@ -67,7 +62,29 @@
             transition: background 0.2s;
         }
         .btn-conectar:hover { background: #2968c8; }
-
+        .alerta-conectar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .alerta-conectar .texto { font-weight: 600; margin-bottom: 4px; }
+        .alerta-conectar .subtexto { font-size: 13px; color: #888; }
+        .btn-ml {
+            background: #fff159;
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -83,9 +100,7 @@
         }
         .stat-card .numero { font-size: 42px; font-weight: bold; color: #3483fa; }
         .stat-card .label { font-size: 14px; color: #888; margin-top: 4px; }
-
         .seccion-titulo { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #444; }
-
         .card-vacia {
             background: white;
             border-radius: 12px;
@@ -94,29 +109,67 @@
             color: #aaa;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+        .publicacion-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-
-        .usuario-info {
-            font-size: 14px;
-            color: #555;
+        .publicacion-imagen {
+            width: 52px;
+            height: 52px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f0f0f0;
         }
+        .publicacion-imagen-placeholder {
+            width: 52px;
+            height: 52px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .publicacion-info { flex: 1; }
+        .publicacion-titulo { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .publicacion-precio { font-size: 13px; color: #3483fa; font-weight: 600; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .btn-desconectar {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #888;
+            text-decoration: none;
+        }
+        .btn-desconectar:hover { border-color: #e53e3e; color: #e53e3e; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🤖 ML Bot - Panel de Control</h1>
-    {% if usuario %}
-    <div class="bot-status">
-        <div class="dot"></div>
-        Bot activo · {{ usuario.nickname }}
-    </div>
-    {% endif %}
+    <h1>🤖 ML Bot</h1>
+    <nav style="display:flex; align-items:center; gap:24px;">
+        <a href="/" style="text-decoration:none; color:#333; font-weight:600; font-size:14px;">Panel</a>
+        <a href="/configuracion" style="text-decoration:none; color:#333; font-weight:600; font-size:14px;">Configuración</a>
+        <a href="/demo" style="text-decoration:none; color:#333; font-weight:600; font-size:14px;">Demo</a>
+        <a href="/historial" style="text-decoration:none; color:#333; font-weight:600; font-size:14px;">Historial</a>
+        {% if usuario and usuario.ml_nickname %}
+        <div class="bot-status">
+            <div class="dot"></div>
+            {{ usuario.ml_nickname }}
+        </div>
+        {% endif %}
+        <a href="/auth/desconectar" style="text-decoration:none; color:#888; font-size:13px; border:1px solid #ccc; padding:6px 14px; border-radius:8px;">Cerrar sesión</a>
+    </nav>
 </header>
 
 <div class="container">
@@ -125,16 +178,25 @@
     <div class="bienvenida">
         <h2>👋 Bienvenido a ML Bot</h2>
         <p>Conectá tu cuenta de MercadoLibre para empezar a responder preguntas automáticamente con IA.</p>
-        <a href="/auth/login" class="btn-conectar">
-            🔗 Conectar cuenta de MercadoLibre
-        </a>
+        <a href="/login" class="btn-conectar">🔗 Iniciar sesión</a>
     </div>
 
     {% else %}
+
+    {% if not usuario.ml_access_token %}
+    <div class="alerta-conectar">
+        <div>
+            <div class="texto">Conectá tu cuenta de MercadoLibre</div>
+            <div class="subtexto">El bot necesita acceso a tu cuenta para responder preguntas automáticamente.</div>
+        </div>
+        <a href="/auth/ml/conectar" class="btn-ml">🔗 Conectar ML</a>
+    </div>
+    {% endif %}
+
     <div class="stats">
         <div class="stat-card">
-            <div class="numero">0</div>
-            <div class="label">Preguntas hoy</div>
+            <div class="numero">{{ publicaciones|length }}</div>
+            <div class="label">Publicaciones activas</div>
         </div>
         <div class="stat-card">
             <div class="numero">0</div>
@@ -149,18 +211,31 @@
     <div class="grid-2">
         <div>
             <div class="seccion-titulo">Mis publicaciones</div>
-            <div class="card-vacia">
-                📦 Cargando publicaciones...
-            </div>
+            {% if publicaciones %}
+                {% for item in publicaciones %}
+                <div class="publicacion-card">
+                    {% if item.thumbnail %}
+                    <img class="publicacion-imagen" src="{{ item.thumbnail }}" alt="{{ item.title }}">
+                    {% else %}
+                    <div class="publicacion-imagen-placeholder">📦</div>
+                    {% endif %}
+                    <div class="publicacion-info">
+                        <div class="publicacion-titulo">{{ item.title }}</div>
+                        <div class="publicacion-precio">$ {{ item.price }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card-vacia">📦 No tenés publicaciones activas.</div>
+            {% endif %}
         </div>
 
         <div>
             <div class="seccion-titulo">Preguntas recientes</div>
-            <div class="card-vacia">
-                💬 Aún no hay preguntas registradas.
-            </div>
+            <div class="card-vacia">💬 Aún no hay preguntas registradas.</div>
         </div>
     </div>
+
     {% endif %}
 
 </div>
