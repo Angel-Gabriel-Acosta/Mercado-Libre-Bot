@@ -1,147 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Bot - Demo</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
-        header {
-            background: #fff159;
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        header h1 { font-size: 22px; color: #333; }
-        nav a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-            margin-left: 24px;
-        }
-        nav a:hover { color: #3483fa; }
-        .container { max-width: 700px; margin: 32px auto; padding: 0 24px; }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #333; }
-        label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; }
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            font-family: 'Segoe UI', sans-serif;
-            margin-bottom: 16px;
-        }
-        input:focus, textarea:focus, select:focus { border-color: #3483fa; }
-        textarea { resize: vertical; min-height: 80px; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: #3483fa;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn:hover { background: #2968c8; }
-        .btn:disabled { background: #aaa; cursor: not-allowed; }
-        .resultado {
-            display: none;
-            margin-top: 24px;
-        }
-        .mensaje {
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
-            max-width: 85%;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        .mensaje.comprador {
-            background: #f0f0f0;
-            align-self: flex-start;
-        }
-        .mensaje.bot {
-            background: #e8f0fe;
-            border-left: 4px solid #3483fa;
-            max-width: 100%;
-        }
-        .mensaje-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #888;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-        }
-        .typing {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            padding: 16px 20px;
-            background: #e8f0fe;
-            border-radius: 12px;
-            border-left: 4px solid #3483fa;
-            margin-bottom: 12px;
-        }
-        .typing span {
-            width: 8px;
-            height: 8px;
-            background: #3483fa;
-            border-radius: 50%;
-            animation: bounce 1.2s infinite;
-        }
-        .typing span:nth-child(2) { animation-delay: 0.2s; }
-        .typing span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-<header>
-    <h1>🤖 ML Bot</h1>
-    <nav>
-        <a href="/">Panel</a>
-        <a href="/configuracion">Configuración</a>
-        <a href="/demo">Demo</a>
-        <a href="/historial">Historial</a>
-        <a href="/auth/desconectar">Cerrar sesión</a>
-    </nav>
-</header>
+{% block title %}ML Bot - Demo{% endblock %}
 
+{% block head %}
+<style>
+    .container { max-width: 700px; margin: 32px auto; padding: 0 24px; }
+    .card { background: white; border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #333; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; }
+    input, textarea { width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none; font-family: 'Segoe UI', sans-serif; margin-bottom: 16px; }
+    input:focus, textarea:focus { border-color: #3483fa; }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn { width: 100%; padding: 14px; background: #3483fa; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn:hover { background: #2968c8; }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+    .resultado { display: none; margin-top: 24px; }
+    .mensaje { border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; line-height: 1.6; }
+    .mensaje.comprador { background: #f0f0f0; }
+    .mensaje.bot { background: #e8f0fe; border-left: 4px solid #3483fa; }
+    .mensaje-label { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 6px; text-transform: uppercase; }
+    .typing { display: flex; gap: 4px; align-items: center; padding: 16px 20px; background: #e8f0fe; border-radius: 12px; border-left: 4px solid #3483fa; margin-bottom: 12px; }
+    .typing span { width: 8px; height: 8px; background: #3483fa; border-radius: 50%; animation: bounce 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="container">
     <div class="card">
         <h2>🎮 Probá el bot en vivo</h2>
-
         <label>Producto</label>
-        <input type="text" id="producto" placeholder="Ej: iPhone 13 128GB Negro" value="iPhone 13 128GB Negro">
-
+        <input type="text" id="producto" value="iPhone 13 128GB Negro">
         <label>Precio</label>
-        <input type="text" id="precio" placeholder="Ej: 500000" value="500000">
-
+        <input type="text" id="precio" value="500000">
         <label>Descripción del producto</label>
-        <textarea id="descripcion" placeholder="Descripción del producto...">Smartphone Apple iPhone 13, pantalla 6.1 pulgadas, cámara dual 12MP, batería de larga duración. Nuevo en caja con garantía oficial de 1 año.</textarea>
-
+        <textarea id="descripcion">Smartphone Apple iPhone 13, pantalla 6.1 pulgadas, cámara dual 12MP, batería de larga duración. Nuevo en caja con garantía oficial de 1 año.</textarea>
         <label>Pregunta del comprador</label>
-        <input type="text" id="pregunta" placeholder="Ej: ¿Tiene garantía oficial?" value="¿El celular viene con cargador?">
-
+        <input type="text" id="pregunta" value="¿El celular viene con cargador?">
         <button class="btn" id="btnDemo" onclick="probarBot()">⚡ Probar bot</button>
 
         <div class="resultado" id="resultado">
@@ -168,7 +65,6 @@ async function probarBot() {
     const mensajeBot = document.getElementById('mensajeBot');
     const textoPregunta = document.getElementById('textoPregunta');
     const textoRespuesta = document.getElementById('textoRespuesta');
-
     const pregunta = document.getElementById('pregunta').value;
     const producto = document.getElementById('producto').value;
     const precio = document.getElementById('precio').value;
@@ -201,6 +97,4 @@ async function probarBot() {
     btn.textContent = '⚡ Probar bot';
 }
 </script>
-
-</body>
-</html>
+{% endblock %}

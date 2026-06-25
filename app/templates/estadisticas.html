@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}ML Bot - Estadísticas{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+    .container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: white; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .stat-card .numero { font-size: 42px; font-weight: bold; color: #3483fa; }
+    .stat-card .label { font-size: 14px; color: #888; margin-top: 4px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: #444; }
+    .card-full { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+    .card-full h2 { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: #444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="stats">
+        <div class="stat-card">
+            <div class="numero">{{ total }}</div>
+            <div class="label">Preguntas totales</div>
+        </div>
+        <div class="stat-card">
+            <div class="numero">{{ hoy }}</div>
+            <div class="label">Preguntas hoy</div>
+        </div>
+        <div class="stat-card">
+            <div class="numero">{{ porcentaje }}%</div>
+            <div class="label">Respondidas automáticamente</div>
+        </div>
+    </div>
+
+    <div class="card-full">
+        <h2>📈 Preguntas por día (últimos 7 días)</h2>
+        <canvas id="graficoLinea" height="80"></canvas>
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <h2>🎯 Tono más usado</h2>
+            <canvas id="graficoDona"></canvas>
+        </div>
+        <div class="card">
+            <h2>📦 Productos con más preguntas</h2>
+            <canvas id="graficoBarra"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dias = {{ dias | tojson }};
+    const cantidades = {{ cantidades | tojson }};
+    const productos = {{ productos | tojson }};
+    const cantProductos = {{ cant_productos | tojson }};
+
+    new Chart(document.getElementById('graficoLinea'), {
+        type: 'line',
+        data: {
+            labels: dias,
+            datasets: [{
+                label: 'Preguntas',
+                data: cantidades,
+                borderColor: '#3483fa',
+                backgroundColor: 'rgba(52,131,250,0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#3483fa'
+            }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+
+    new Chart(document.getElementById('graficoDona'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Amigable', 'Formal', 'Breve'],
+            datasets: [{ data: [60, 25, 15], backgroundColor: ['#3483fa', '#22c55e', '#f59e0b'] }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    new Chart(document.getElementById('graficoBarra'), {
+        type: 'bar',
+        data: {
+            labels: productos,
+            datasets: [{
+                label: 'Preguntas',
+                data: cantProductos,
+                backgroundColor: '#3483fa',
+                borderRadius: 6
+            }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+</script>
+{% endblock %}

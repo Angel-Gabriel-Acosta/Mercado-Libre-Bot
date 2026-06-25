@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 from app.auth import router as auth_router
 from app.webhook import router as webhook_router
-from app.database import obtener_usuario_por_id, obtener_config, guardar_config, obtener_historial, guardar_historial
+from app.database import obtener_usuario_por_id, obtener_config, guardar_config, obtener_historial, guardar_historial, obtener_estadisticas
 from app.ml_client import get_publicaciones
 from app.ai_responder import generar_respuesta
 
@@ -16,12 +16,15 @@ templates = Jinja2Templates(directory="app/templates")
 app.include_router(auth_router, prefix="/auth")
 app.include_router(webhook_router, prefix="/webhook")
 
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+async def get_usuario(request: Request):
     user_id = request.session.get("user_id")
     if not user_id:
-        return RedirectResponse("/login")
-    usuario = obtener_usuario_por_id(user_id)
+        return None
+    return obtener_usuario_por_id(user_id)
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    usuario = await get_usuario(request)
     if not usuario:
         return RedirectResponse("/login")
     publicaciones = []
@@ -47,33 +50,33 @@ async def registro_page(request: Request):
 
 @app.get("/configuracion", response_class=HTMLResponse)
 async def configuracion_page(request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    usuario = await get_usuario(request)
+    if not usuario:
         return RedirectResponse("/login")
-    config = obtener_config(user_id)
-    return templates.TemplateResponse(request, "configuracion.html", {"config": config, "guardado": False})
+    config = obtener_config(usuario.id)
+    return templates.TemplateResponse(request, "configuracion.html", {"usuario": usuario, "config": config, "guardado": False})
 
 @app.post("/configuracion", response_class=HTMLResponse)
 async def configuracion_guardar(request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    usuario = await get_usuario(request)
+    if not usuario:
         return RedirectResponse("/login")
     form = await request.form()
     tono = form.get("tono", "amigable")
     info_extra = form.get("info_extra", "")
     bot_activo = "bot_activo" in form
     modo_revision = "modo_revision" in form
-    guardar_config(user_id, tono, info_extra, bot_activo, modo_revision)
-    config = obtener_config(user_id)
-    return templates.TemplateResponse(request, "configuracion.html", {"config": config, "guardado": True})
+    guardar_config(usuario.id, tono, info_extra, bot_activo, modo_revision)
+    config = obtener_config(usuario.id)
+    return templates.TemplateResponse(request, "configuracion.html", {"usuario": usuario, "config": config, "guardado": True})
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_page(request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    usuario = await get_usuario(request)
+    if not usuario:
         return RedirectResponse("/login")
-    config = obtener_config(user_id)
-    return templates.TemplateResponse(request, "demo.html", {"config": config})
+    config = obtener_config(usuario.id)
+    return templates.TemplateResponse(request, "demo.html", {"usuario": usuario, "config": config})
 
 class DemoRequest(BaseModel):
     pregunta: str
@@ -83,22 +86,32 @@ class DemoRequest(BaseModel):
 
 @app.post("/demo/responder")
 async def demo_responder(data: DemoRequest, request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    usuario = await get_usuario(request)
+    if not usuario:
         return {"respuesta": "No autorizado"}
-    config = obtener_config(user_id)
+    config = obtener_config(usuario.id)
     info_producto = {
         "title": data.producto,
         "price": data.precio,
         "description": data.descripcion
     }
     respuesta = await generar_respuesta(data.pregunta, info_producto, tono=config.tono)
+    guardar_historial(usuario.id, data.pregunta, respuesta, data.producto)
     return {"respuesta": respuesta}
 
 @app.get("/historial", response_class=HTMLResponse)
 async def historial_page(request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:
+    usuario = await get_usuario(request)
+    if not usuario:
         return RedirectResponse("/login")
-    historial = obtener_historial(user_id)
-    return templates.TemplateResponse(request, "historial.html", {"historial": historial})
+    historial = obtener_historial(usuario.id)
+    return templates.TemplateResponse(request, "historial.html", {"usuario": usuario, "historial": historial})
+
+@app.get("/estadisticas", response_class=HTMLResponse)
+async def estadisticas_page(request: Request):
+    usuario = await get_usuario(request)
+    if not usuario:
+        return RedirectResponse("/login")
+    stats = obtener_estadisticas(usuario.id)
+    stats["usuario"] = usuario
+    return templates.TemplateResponse(request, "estadisticas.html", stats)

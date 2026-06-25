@@ -129,3 +129,38 @@ def obtener_historial(usuario_id: int):
     items = db.query(Historial).filter(Historial.usuario_id == usuario_id).order_by(Historial.id.desc()).all()
     db.close()
     return items
+
+def obtener_estadisticas(usuario_id: int):
+    from datetime import datetime, timedelta
+    db = SessionLocal()
+    items = db.query(Historial).filter(Historial.usuario_id == usuario_id).all()
+    db.close()
+
+    total = len(items)
+    hoy = datetime.now().strftime("%d/%m/%Y")
+    preguntas_hoy = sum(1 for i in items if i.fecha and i.fecha.startswith(hoy))
+
+    # Últimos 7 días
+    dias = []
+    cantidades = []
+    for d in range(6, -1, -1):
+        fecha = (datetime.now() - timedelta(days=d)).strftime("%d/%m")
+        dias.append(fecha)
+        cantidades.append(sum(1 for i in items if i.fecha and i.fecha.startswith(fecha.replace("/", "/20"))))
+
+    # Productos con más preguntas
+    from collections import Counter
+    contador = Counter(i.producto for i in items if i.producto)
+    top = contador.most_common(5)
+    productos = [p[0][:20] for p in top] if top else ["Sin datos"]
+    cant_productos = [p[1] for p in top] if top else [0]
+
+    return {
+        "total": total,
+        "hoy": preguntas_hoy,
+        "porcentaje": 100 if total > 0 else 0,
+        "dias": dias,
+        "cantidades": cantidades,
+        "productos": productos,
+        "cant_productos": cant_productos
+    }
